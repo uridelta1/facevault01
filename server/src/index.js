@@ -43,7 +43,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import multer from 'multer'; // Add this import
-
+import 'dotenv/config';
 import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
 import photoRoutes from './routes/photos.js';

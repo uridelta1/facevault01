@@ -4,7 +4,17 @@ import api from '../lib/api';
 import { detectSingleFace, loadImage, loadFaceModels } from '../lib/face';
 
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:4000/api').replace(/\/api$/, '');
+function getImageUrl(url) {
+  if (!url) return '';
 
+  // ImageKit / external URL
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // Old local uploads
+  return API_ORIGIN + url;
+}
 export default function GuestEvent() {
   const { slug } = useParams();
   const [event, setEvent] = useState(null);
@@ -59,7 +69,12 @@ function PasswordGate({ event, onVerified }) {
   return (
     <div className="max-w-sm mx-auto px-6 py-24">
       {event.coverImage && (
-        <img src={API_ORIGIN + event.coverImage} alt="" className="w-full aspect-video object-cover rounded-sm mb-8 border border-edge" />
+        // <img src={API_ORIGIN + event.coverImage} alt="" className="w-full aspect-video object-cover rounded-sm mb-8 border border-edge" />
+        <img
+  src={getImageUrl(event.coverImage)}
+  alt=""
+  className="w-full aspect-video object-cover rounded-sm mb-8 border border-edge"
+/>
       )}
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-amber mb-2">Guest gallery</p>
       <h1 className="font-display text-3xl mb-8">{event.title}</h1>
@@ -242,23 +257,48 @@ function SelfieSearch({ event, guestToken, modelsReady }) {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
                 {results.map(r => (
                   <div key={r.id} className="border border-edge rounded-sm overflow-hidden bg-panel">
-                    <img src={API_ORIGIN + r.thumbUrl} alt="" className="w-full aspect-square object-cover" />
+                    {/* <img src={API_ORIGIN + r.thumbUrl} alt="" className="w-full aspect-square object-cover" /> */}
+                    <img
+  src={getImageUrl(r.thumbUrl)}
+  alt=""
+  className="w-full aspect-square object-cover"
+/>
                     <div className="flex items-center justify-between px-2.5 py-2">
                       <span className="font-mono text-[10px] text-amber">{r.confidence}% match</span>
-                      <a href={API_ORIGIN + r.imageUrl} download className="font-mono text-[10px] text-mist hover:text-amber transition-colors">
+                      {/* <a href={API_ORIGIN + r.imageUrl} download className="font-mono text-[10px] text-mist hover:text-amber transition-colors">
                         ↓ Save
-                      </a>
+                      </a> */}
+                      <a
+  href={getImageUrl(r.imageUrl)}
+  download
+  className="font-mono text-[10px] text-mist hover:text-amber transition-colors"
+>
+  ↓ Save
+</a>
                     </div>
                   </div>
                 ))}
               </div>
-              <a
+              {/* <a
                 href="#"
                 onClick={e => { e.preventDefault(); results.forEach(r => window.open(API_ORIGIN + r.imageUrl, '_blank')); }}
                 className="font-mono text-xs text-amber hover:underline"
               >
                 Download all →
-              </a>
+              </a> */}
+              <a
+  href="#"
+  onClick={(e) => {
+    e.preventDefault();
+
+    results.forEach((r) => {
+      window.open(getImageUrl(r.imageUrl), '_blank');
+    });
+  }}
+  className="font-mono text-xs text-amber hover:underline"
+>
+  Download all →
+</a>
             </>
           )}
         </div>
