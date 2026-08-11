@@ -254,8 +254,10 @@ app.use((err, req, res, next) => {
 //   );
 
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[FaceVault] API running on port ${PORT}`);
-});
+    console.log(
+      `[FaceVault] API running on port ${PORT}`
+    );
+
 
   console.log(
     `[FaceVault] Health check: http://localhost:${PORT}/api/health`
