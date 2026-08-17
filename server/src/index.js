@@ -109,6 +109,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import multer from 'multer';
 import 'dotenv/config';
+import mongoose from 'mongoose';
 
 import authRoutes from './routes/auth.js';
 import eventRoutes from './routes/events.js';
@@ -244,22 +245,22 @@ app.use((err, req, res, next) => {
 
 /*
 |--------------------------------------------------------------------------
-| Start Server
+| Start Server & Connect DB
 |--------------------------------------------------------------------------
 */
 
-// app.listen(PORT, () => {
-//   console.log(
-//     `[FaceVault] API running on http://localhost:${PORT}`
-//   );
-
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(
-      `[FaceVault] API running on port ${PORT}`
-    );
-
-
-  console.log(
-    `[FaceVault] Health check: http://localhost:${PORT}/api/health`
-  );
-});
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('[FaceVault] Connected to MongoDB successfully.');
+    app.listen(PORT, () => {
+      console.log(
+        `[FaceVault] API running on http://localhost:${PORT}`
+      );
+      console.log(
+        `[FaceVault] Health check: http://localhost:${PORT}/api/health`
+      );
+    });
+  })
+  .catch((err) => {
+    console.error('[FaceVault] MongoDB connection failed:', err.message);
+  });

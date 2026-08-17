@@ -7,6 +7,22 @@
       "passwordHash": "$2a$10$l/iCXZx/OJWXJm4oUcNR0.0QXPtvq1J4qk9kF7ILMK7TSvyzJ2Tbm",
       "role": "organizer",
       "createdAt": "2026-08-02T08:20:28.198Z"
+    },
+    {
+      "id": "6XYkErT3BC",
+      "name": "we",
+      "email": "aviviper@gmail.com",
+      "passwordHash": "$2a$10$iQs1H3NPMaDRMlyq3Pb3N.cZyGd20sl.nUuiDETnvy/CqcoMoXzcW",
+      "role": "organizer",
+      "createdAt": "2026-08-11T13:04:15.801Z"
+    },
+    {
+      "id": "8f6Zsma-xt",
+      "name": "qq",
+      "email": "qq@gmail.com",
+      "passwordHash": "$2a$10$/bEn7Y93dQg2mRct/pm7EOb86VIW6GcsnDl3jagb4fQWcnjtJCMrS",
+      "role": "organizer",
+      "createdAt": "2026-08-11T13:07:15.924Z"
     }
   ],
   "events": [

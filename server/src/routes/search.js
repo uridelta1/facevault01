@@ -1,93 +1,5 @@
-// import { Router } from 'express';
-// import db from '../db.js';
-// import { requireEventAccess } from '../middleware/auth.js';
-
-// const router = Router();
-
-// /**
-//  * Normalize a descriptor vector to unit length.
-//  * This ensures consistent euclidean distances regardless of
-//  * minor magnitude variations between different detection runs.
-//  */
-// function normalize(vec) {
-//   let mag = 0;
-//   for (let i = 0; i < vec.length; i++) mag += vec[i] * vec[i];
-//   mag = Math.sqrt(mag);
-//   if (mag === 0) return vec;
-//   return vec.map(v => v / mag);
-// }
-
-// function euclideanDistance(a, b) {
-//   let sum = 0;
-//   for (let i = 0; i < a.length; i++) sum += (a[i] - b[i]) ** 2;
-//   return Math.sqrt(sum);
-// }
-
-// /**
-//  * Convert a euclidean distance to a 0–100% confidence score.
-//  *
-//  * face-api.js 128-d descriptor distances:
-//  *   - Same person:       typically 0.25 – 0.50
-//  *   - Different person:  typically 0.65 – 1.2+
-//  *   - Threshold sweet spot: ~0.55 – 0.65
-//  *
-//  * We use a sigmoid-like mapping centred around 0.5 so that:
-//  *   distance 0.0  → 100%
-//  *   distance 0.35 →  90%
-//  *   distance 0.50 →  75%
-//  *   distance 0.60 →  55%
-//  *   distance 0.65 →  40%
-//  */
-// function toConfidence(distance) {
-//   // Clamp-and-map approach: maps [0, 1.0] → [100, 0] with a curve
-//   // that compresses the "definitely same" range toward 90–100%
-//   const normalized = Math.min(distance, 1.0);
-//   const pct = (1 - Math.pow(normalized / 0.9, 1.8)) * 100;
-//   return Math.max(0, Math.min(100, Math.round(pct)));
-// }
-
-// // POST /api/search/:eventId  { descriptor: number[128], threshold?: number }
-// router.post('/:eventId', requireEventAccess(db), async (req, res) => {
-//   const { descriptor, threshold = 0.65 } = req.body;
-//   if (!Array.isArray(descriptor) || descriptor.length !== 128) {
-//     return res.status(400).json({ error: 'A valid 128-value face descriptor is required. Make sure a face was detected in your selfie.' });
-//   }
-
-//   // Normalize the query descriptor for consistent comparisons
-//   const queryDesc = normalize(descriptor);
-
-//   await db.read();
-//   const photos = db.data.photos.filter(p => p.eventId === req.params.eventId);
-
-//   const matches = [];
-//   for (const photo of photos) {
-//     if (!photo.faces || photo.faces.length === 0) continue;
-//     let best = Infinity;
-//     for (const face of photo.faces) {
-//       if (!face.descriptor || face.descriptor.length !== 128) continue;
-//       const faceDesc = normalize(face.descriptor);
-//       const d = euclideanDistance(queryDesc, faceDesc);
-//       if (d < best) best = d;
-//     }
-//     if (best <= threshold) {
-//       matches.push({
-//         id: photo.id,
-//         imageUrl: photo.imageUrl,
-//         thumbUrl: photo.thumbUrl,
-//         confidence: toConfidence(best),
-//         distance: Number(best.toFixed(4))
-//       });
-//     }
-//   }
-
-//   matches.sort((a, b) => a.distance - b.distance);
-//   res.json({ totalPhotosScanned: photos.length, matchCount: matches.length, matches });
-// });
-
-// export default router;
-
 import { Router } from 'express';
-import db from '../db.js';
+import Photo from '../models/Photo.js';
 import { requireEventAccess } from '../middleware/auth.js';
 
 const router = Router();
@@ -150,7 +62,7 @@ function toConfidence(distance) {
  *   "threshold": 0.55
  * }
  */
-router.post('/:eventId', requireEventAccess(db), async (req, res) => {
+router.post('/:eventId', requireEventAccess(), async (req, res) => {
   try {
     const { descriptor } = req.body;
 
@@ -195,16 +107,12 @@ router.post('/:eventId', requireEventAccess(db), async (req, res) => {
     const threshold = 0.55;
 
     // --------------------------------------------------
-    // Load database
+    // Load photos from MongoDB
     // --------------------------------------------------
-
-    await db.read();
 
     const eventId = req.params.eventId;
 
-    const photos = db.data.photos.filter(
-      photo => photo.eventId === eventId
-    );
+    const photos = await Photo.find({ eventId });
 
     // --------------------------------------------------
     // Compare selfie against every face in every photo
@@ -265,7 +173,7 @@ router.post('/:eventId', requireEventAccess(db), async (req, res) => {
         bestDistance <= threshold
       ) {
         matches.push({
-          id: photo.id,
+          id: photo._id,
           eventId: photo.eventId,
           imageUrl: photo.imageUrl,
           thumbUrl: photo.thumbUrl,

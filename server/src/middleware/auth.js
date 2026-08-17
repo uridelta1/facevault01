@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import Event from '../models/Event.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'facevault-dev-secret-change-in-production';
 
@@ -30,7 +31,7 @@ export function requireRole(...roles) {
 // Allows access if the caller is either:
 //  - an organizer who owns the event, or
 //  - a guest holding a token scoped to this specific eventId
-export function requireEventAccess(db) {
+export function requireEventAccess() {
   return async (req, res, next) => {
     const header = req.headers.authorization || '';
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;
@@ -44,8 +45,7 @@ export function requireEventAccess(db) {
         return next();
       }
       if (payload.role === 'organizer') {
-        await db.read();
-        const event = db.data.events.find(e => e.id === eventId && e.creatorId === payload.id);
+        const event = await Event.findOne({ _id: eventId, creatorId: payload.id });
         if (event) {
           req.access = { role: 'organizer', eventId };
           return next();
