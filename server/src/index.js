@@ -252,13 +252,10 @@ app.use((err, req, res, next) => {
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('[FaceVault] Connected to MongoDB successfully.');
+
     app.listen(PORT, () => {
-      console.log(
-        `[FaceVault] API running on http://localhost:${PORT}`
-      );
-      console.log(
-        `[FaceVault] Health check: http://localhost:${PORT}/api/health`
-      );
+      console.log(`[FaceVault] API running on port ${PORT}`);
+      console.log(`[FaceVault] Health check: /api/health`);
     });
   })
   .catch((err) => {
